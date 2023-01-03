@@ -10,7 +10,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 41,
+   "execution_count": 5,
    "id": "4602b3c6-6455-4b70-a272-44c8915f80e7",
    "metadata": {},
    "outputs": [],
@@ -18,12 +18,60 @@
     "import pandas as pd\n",
     "import numpy as np\n",
     "import requests\n",
-    "from string import printable"
+    "import re\n",
+    "import string\n",
+    "import collections\n",
+    "import nltk\n",
+    "from nltk.corpus import stopwords\n",
+    "from nltk.stem import WordNetLemmatizer\n",
+    "from nltk import word_tokenize\n",
+    "from nltk.stem import PorterStemmer\n",
+    "from nltk.corpus import stopwords\n",
+    "from sklearn.cluster import KMeans\n",
+    "from sklearn.feature_extraction.text import TfidfVectorizer\n",
+    "from sklearn.decomposition import PCA\n",
+    "from scipy.sparse import csr_matrix"
    ]
   },
   {
    "cell_type": "code",
-   "execution_count": 7,
+   "execution_count": 4,
+   "id": "33e89faf-133a-4b6b-ba66-4b380dad79d6",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "[nltk_data] Downloading package stopwords to /home/studio-lab-\n",
+      "[nltk_data]     user/nltk_data...\n",
+      "[nltk_data]   Unzipping corpora/stopwords.zip.\n",
+      "[nltk_data] Downloading package wordnet to /home/studio-lab-\n",
+      "[nltk_data]     user/nltk_data...\n",
+      "[nltk_data] Downloading package omw-1.4 to /home/studio-lab-\n",
+      "[nltk_data]     user/nltk_data...\n"
+     ]
+    },
+    {
+     "data": {
+      "text/plain": [
+       "True"
+      ]
+     },
+     "execution_count": 4,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "nltk.download('stopwords')\n",
+    "nltk.download('wordnet')\n",
+    "nltk.download('omw-1.4')"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 10,
    "id": "234500c4-3330-42a0-8015-a90df814f913",
    "metadata": {},
    "outputs": [],
@@ -33,7 +81,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 2,
+   "execution_count": 11,
    "id": "1852a321-1553-45b1-a388-70ad2597cd93",
    "metadata": {},
    "outputs": [],
@@ -44,7 +92,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 21,
+   "execution_count": 12,
    "id": "8ed67016-0a4a-4ae1-84d5-8930dda1955b",
    "metadata": {},
    "outputs": [],
@@ -55,7 +103,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 22,
+   "execution_count": 13,
    "id": "59f78280-2122-49d5-a1c9-2f9bcfe64a5e",
    "metadata": {},
    "outputs": [],
@@ -65,7 +113,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 32,
+   "execution_count": 14,
    "id": "80a1ad75-1c1f-4816-b1d4-fbb8f262e089",
    "metadata": {},
    "outputs": [],
@@ -75,7 +123,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 46,
+   "execution_count": 15,
    "id": "f07cab8e-3d38-4676-b5dd-2fa5835fd14b",
    "metadata": {},
    "outputs": [],
@@ -85,7 +133,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 47,
+   "execution_count": 16,
    "id": "bbbf4160-f00b-4640-92a2-0048383a92c9",
    "metadata": {},
    "outputs": [
@@ -97,7 +145,7 @@
        "      dtype='<U400')"
       ]
      },
-     "execution_count": 47,
+     "execution_count": 16,
      "metadata": {},
      "output_type": "execute_result"
     }
@@ -108,7 +156,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": null,
+   "execution_count": 17,
    "id": "4b56807a-d220-4fd8-baa8-256c9fd11914",
    "metadata": {},
    "outputs": [],
@@ -118,7 +166,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 48,
+   "execution_count": 18,
    "id": "462b55bb-1ad0-4cb5-b270-893deafc6fd0",
    "metadata": {},
    "outputs": [
@@ -128,7 +176,7 @@
        "(31105, 2)"
       ]
      },
-     "execution_count": 48,
+     "execution_count": 18,
      "metadata": {},
      "output_type": "execute_result"
     }
@@ -139,7 +187,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 49,
+   "execution_count": 19,
    "id": "bfb663fa-c050-4e92-b7f8-aa6860341f06",
    "metadata": {},
    "outputs": [],
@@ -149,7 +197,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 52,
+   "execution_count": 20,
    "id": "5abc1181-2c68-46c4-9473-7fba1a284422",
    "metadata": {},
    "outputs": [
@@ -217,7 +265,7 @@
        "4  Genesis 1:5  God called the light day, and the darkness He ..."
       ]
      },
-     "execution_count": 52,
+     "execution_count": 20,
      "metadata": {},
      "output_type": "execute_result"
     }
@@ -228,8 +276,68 @@
   },
   {
    "cell_type": "code",
-   "execution_count": null,
+   "execution_count": 21,
    "id": "8247e714-9761-4831-9430-c55e5d1629b3",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "def text_process(text):\n",
+    "    '''\n",
+    "    Takes in a string of text, then performs the following:\n",
+    "    1. Remove all punctuation\n",
+    "    2. Remove all stopwords\n",
+    "    3. Return the cleaned text as a list of words\n",
+    "    4. Remove words\n",
+    "    '''\n",
+    "    stemmer = WordNetLemmatizer()\n",
+    "    nopunc = [char for char in text if char not in string.punctuation]\n",
+    "    nopunc = ''.join([i for i in nopunc if not i.isdigit()])\n",
+    "    nopunc = [word.lower() for word in nopunc.split() if word not in stopwords.words('english')]\n",
+    "    return [stemmer.lemmatize(word) for word in nopunc]"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 22,
+   "id": "a97c1d9b-948f-49f2-bd9c-dcd98a72a09b",
+   "metadata": {},
+   "outputs": [
+    {
+     "ename": "NameError",
+     "evalue": "name 'statement_list' is not defined",
+     "output_type": "error",
+     "traceback": [
+      "\u001b[0;31m---------------------------------------------------------------------------\u001b[0m",
+      "\u001b[0;31mNameError\u001b[0m                                 Traceback (most recent call last)",
+      "Input \u001b[0;32mIn [22]\u001b[0m, in \u001b[0;36m<cell line: 2>\u001b[0;34m()\u001b[0m\n\u001b[1;32m      1\u001b[0m tfidfconvert \u001b[38;5;241m=\u001b[39m TfidfVectorizer(analyzer\u001b[38;5;241m=\u001b[39mtext_process)\u001b[38;5;241m.\u001b[39mfit(bible_array[:,\u001b[38;5;241m1\u001b[39m])\n\u001b[0;32m----> 2\u001b[0m transformed_statements \u001b[38;5;241m=\u001b[39m tfidfconvert\u001b[38;5;241m.\u001b[39mtransform(\u001b[43mstatement_list\u001b[49m)\n\u001b[1;32m      3\u001b[0m df_vocab \u001b[38;5;241m=\u001b[39m pd\u001b[38;5;241m.\u001b[39mDataFrame(index\u001b[38;5;241m=\u001b[39m\u001b[38;5;28;01mNone\u001b[39;00m,\n\u001b[1;32m      4\u001b[0m                         data\u001b[38;5;241m=\u001b[39m\u001b[38;5;28mzip\u001b[39m(tfidfconvert\u001b[38;5;241m.\u001b[39mvocabulary_\u001b[38;5;241m.\u001b[39mkeys(),\n\u001b[1;32m      5\u001b[0m                                  tfidfconvert\u001b[38;5;241m.\u001b[39mvocabulary_\u001b[38;5;241m.\u001b[39mvalues()),\n\u001b[1;32m      6\u001b[0m                         columns\u001b[38;5;241m=\u001b[39m[\u001b[38;5;124m'\u001b[39m\u001b[38;5;124mword\u001b[39m\u001b[38;5;124m'\u001b[39m, \u001b[38;5;124m'\u001b[39m\u001b[38;5;124mindex\u001b[39m\u001b[38;5;124m'\u001b[39m])\u001b[38;5;241m.\u001b[39msort_values(\u001b[38;5;124m'\u001b[39m\u001b[38;5;124mindex\u001b[39m\u001b[38;5;124m'\u001b[39m)\n\u001b[1;32m      7\u001b[0m tfidf_df \u001b[38;5;241m=\u001b[39m pd\u001b[38;5;241m.\u001b[39mDataFrame(csr_matrix\u001b[38;5;241m.\u001b[39mtodense(transformed_statements), columns\u001b[38;5;241m=\u001b[39mdf_vocab\u001b[38;5;241m.\u001b[39mword)\n",
+      "\u001b[0;31mNameError\u001b[0m: name 'statement_list' is not defined"
+     ]
+    }
+   ],
+   "source": [
+    "tfidfconvert = TfidfVectorizer(analyzer=text_process).fit(bible_array[:,1])\n",
+    "transformed_statements = tfidfconvert.transform(statement_list)\n",
+    "df_vocab = pd.DataFrame(index=None,\n",
+    "                        data=zip(tfidfconvert.vocabulary_.keys(),\n",
+    "                                 tfidfconvert.vocabulary_.values()),\n",
+    "                        columns=['word', 'index']).sort_values('index')\n",
+    "tfidf_df = pd.DataFrame(csr_matrix.todense(transformed_statements), columns=df_vocab.word)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "84c81edc-c1c5-4c2c-9286-0e2bff26216f",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "tfidf_df.shape"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "41475495-5569-40b8-a6ef-7cf12851ba5d",
    "metadata": {},
    "outputs": [],
    "source": []
@@ -237,9 +345,9 @@
  ],
  "metadata": {
   "kernelspec": {
-   "display_name": "default:Python",
+   "display_name": "py39:Python",
    "language": "python",
-   "name": "conda-env-default-py"
+   "name": "conda-env-py39-py"
   },
   "language_info": {
    "codemirror_mode": {
@@ -251,7 +359,7 @@
    "name": "python",
    "nbconvert_exporter": "python",
    "pygments_lexer": "ipython3",
-   "version": "3.9.13"
+   "version": "3.9.15"
   }
  },
  "nbformat": 4,
