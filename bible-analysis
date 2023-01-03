@@ -1,0 +1,259 @@
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "id": "061253aa-7fd2-4b95-86ad-86fa53ef3221",
+   "metadata": {},
+   "source": [
+    "## Import Libraries and Functions"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 41,
+   "id": "4602b3c6-6455-4b70-a272-44c8915f80e7",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "import pandas as pd\n",
+    "import numpy as np\n",
+    "import requests\n",
+    "from string import printable"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 7,
+   "id": "234500c4-3330-42a0-8015-a90df814f913",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "bible_url = 'https://bereanbible.com/bsb.txt'"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 2,
+   "id": "1852a321-1553-45b1-a388-70ad2597cd93",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "with open('./data/bereanbible.txt', 'r') as f:\n",
+    "    text = f.read()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 21,
+   "id": "8ed67016-0a4a-4ae1-84d5-8930dda1955b",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "response = requests.get(bible_url)\n",
+    "raw_bible = response.text"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 22,
+   "id": "59f78280-2122-49d5-a1c9-2f9bcfe64a5e",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "bible_list = raw_bible.splitlines()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 32,
+   "id": "80a1ad75-1c1f-4816-b1d4-fbb8f262e089",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "bible_array = np.array([item.split('\\t') for item in bible_list])"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 46,
+   "id": "f07cab8e-3d38-4676-b5dd-2fa5835fd14b",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "bible_array[:, 1] = [item.replace('\\x93', '').replace('\\x94', '') for item in bible_array[:, 1]]"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 47,
+   "id": "bbbf4160-f00b-4640-92a2-0048383a92c9",
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "array(['Genesis 1:3',\n",
+       "       'And God said, Let there be light, and there was light.'],\n",
+       "      dtype='<U400')"
+      ]
+     },
+     "execution_count": 47,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "bible_array[5, :]"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "4b56807a-d220-4fd8-baa8-256c9fd11914",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "#bible_array = >>> best_string_ever = filter(lambda x: x in printable, a)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 48,
+   "id": "462b55bb-1ad0-4cb5-b270-893deafc6fd0",
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "(31105, 2)"
+      ]
+     },
+     "execution_count": 48,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "bible_array.shape"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 49,
+   "id": "bfb663fa-c050-4e92-b7f8-aa6860341f06",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "df = pd.DataFrame(bible_array[3:, :], columns=bible_array[2, :])"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 52,
+   "id": "5abc1181-2c68-46c4-9473-7fba1a284422",
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "<div>\n",
+       "<style scoped>\n",
+       "    .dataframe tbody tr th:only-of-type {\n",
+       "        vertical-align: middle;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe tbody tr th {\n",
+       "        vertical-align: top;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe thead th {\n",
+       "        text-align: right;\n",
+       "    }\n",
+       "</style>\n",
+       "<table border=\"1\" class=\"dataframe\">\n",
+       "  <thead>\n",
+       "    <tr style=\"text-align: right;\">\n",
+       "      <th></th>\n",
+       "      <th>Verse</th>\n",
+       "      <th>Berean Study Bible</th>\n",
+       "    </tr>\n",
+       "  </thead>\n",
+       "  <tbody>\n",
+       "    <tr>\n",
+       "      <th>0</th>\n",
+       "      <td>Genesis 1:1</td>\n",
+       "      <td>In the beginning God created the heavens and t...</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>1</th>\n",
+       "      <td>Genesis 1:2</td>\n",
+       "      <td>Now the earth was formless and void, and darkn...</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>2</th>\n",
+       "      <td>Genesis 1:3</td>\n",
+       "      <td>And God said, Let there be light, and there wa...</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>3</th>\n",
+       "      <td>Genesis 1:4</td>\n",
+       "      <td>And God saw that the light was good, and He se...</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>4</th>\n",
+       "      <td>Genesis 1:5</td>\n",
+       "      <td>God called the light day, and the darkness He ...</td>\n",
+       "    </tr>\n",
+       "  </tbody>\n",
+       "</table>\n",
+       "</div>"
+      ],
+      "text/plain": [
+       "         Verse                                 Berean Study Bible\n",
+       "0  Genesis 1:1  In the beginning God created the heavens and t...\n",
+       "1  Genesis 1:2  Now the earth was formless and void, and darkn...\n",
+       "2  Genesis 1:3  And God said, Let there be light, and there wa...\n",
+       "3  Genesis 1:4  And God saw that the light was good, and He se...\n",
+       "4  Genesis 1:5  God called the light day, and the darkness He ..."
+      ]
+     },
+     "execution_count": 52,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "df.head()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "8247e714-9761-4831-9430-c55e5d1629b3",
+   "metadata": {},
+   "outputs": [],
+   "source": []
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "default:Python",
+   "language": "python",
+   "name": "conda-env-default-py"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.9.13"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 5
+}
